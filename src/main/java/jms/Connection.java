@@ -47,6 +47,7 @@ public class Connection implements AutoCloseable {
     public Connection(ServerSocket serverSocket) {
         try {
             this.socket = serverSocket.accept();
+            System.out.println("Client connected");
             this.reader = createReader();
             this.writer = createWriter();
         } catch (IOException e) {

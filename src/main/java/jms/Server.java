@@ -1,6 +1,6 @@
 package jms;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,6 +10,9 @@ public class Server {
     private AtomicInteger subscriberId = new AtomicInteger(0);
     private int port;
     private ServerSocket serverSocket;
+    private Connection connection;
+    private Service topicService = new TopicService();
+    private Service queueService = new QueueService();
 
     private ExecutorService pool = Executors.newFixedThreadPool(
             Runtime.getRuntime().availableProcessors()
@@ -20,11 +23,11 @@ public class Server {
     }
 
     public void start() {
-        try {
-            serverSocket = new ServerSocket(port);
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
             while (!serverSocket.isClosed()) {
                 Connection connection = new Connection(serverSocket);
-                pool.execute(new ConnectionHandler(connection, subscriberId.incrementAndGet()));
+                pool.execute(
+                        new ConnectionHandler(connection, subscriberId.incrementAndGet(), topicService, queueService));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -35,9 +38,13 @@ public class Server {
         if (serverSocket != null) {
             try {
                 serverSocket.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void main(String[] args) {
+        new Server(8000).start();
     }
 }
