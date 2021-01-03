@@ -6,11 +6,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class QueueService implements Service {
-    private Map<String, Queue<String>> queueMap = new ConcurrentHashMap<>();
+    private final Map<String, Queue<String>> messages = new ConcurrentHashMap<>();
 
     @Override
     public void get(Connection connection, String nameOfQueue) {
-        java.util.Queue<String> queue = queueMap.get(nameOfQueue);
+        java.util.Queue<String> queue = messages.get(nameOfQueue);
         if (queue == null) {
             connection.write("Such queue doesn't exist");
         } else {
@@ -21,13 +21,16 @@ public class QueueService implements Service {
 
     @Override
     public void post(Connection connection, String nameOfQueue, String text) {
-        java.util.Queue<String> queue = queueMap.get(nameOfQueue);
+        java.util.Queue<String> queue = messages.get(nameOfQueue);
         if (queue == null) {
             queue = new ConcurrentLinkedQueue<>();
             queue.add(text);
-            queueMap.put(nameOfQueue, queue);
+            java.util.Queue<String> tmpQueue = messages.putIfAbsent(nameOfQueue, queue);
+            if (tmpQueue != null) {
+                tmpQueue.add(text);
+            }
         } else {
-            queueMap.get(nameOfQueue).add(text);
+            messages.get(nameOfQueue).add(text);
         }
     }
 }
