@@ -1,5 +1,6 @@
 package jms;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,16 +22,10 @@ public class QueueService implements Service {
 
     @Override
     public void post(Connection connection, String nameOfQueue, String text) {
-        java.util.Queue<String> queue = messages.get(nameOfQueue);
-        if (queue == null) {
-            queue = new ConcurrentLinkedQueue<>();
-            queue.add(text);
-            java.util.Queue<String> tmpQueue = messages.putIfAbsent(nameOfQueue, queue);
-            if (tmpQueue != null) {
-                tmpQueue.add(text);
-            }
-        } else {
-            messages.get(nameOfQueue).add(text);
+        java.util.Queue<String> tmpQueue = messages.putIfAbsent(
+                nameOfQueue, new ConcurrentLinkedQueue<>(Collections.singleton(text)));
+        if (tmpQueue != null) {
+            tmpQueue.add(text);
         }
     }
 }
