@@ -31,7 +31,8 @@ public class JMSTest {
     @Test
     public void whenWriteToQueueThenReadInTurns() throws InterruptedException {
         Thread.sleep(3000);
-        Client publisher = new Client();
+        QueueService qs = (QueueService) server.getQueueService();
+        List<Client> publishers = List.of(new Client(), new Client(), new Client());
         Client reader1 = new Client();
         Client reader2 = new Client();
         Client reader3 = new Client();
@@ -48,16 +49,21 @@ public class JMSTest {
                 "  \"queue\" : \"weather\",\n" +
                 "  \"text\" : \"temperature +33 C\"\n" +
                 "}"};
-        publisher.connect(ip, port);
-        for (String post : postQueue) {
-            publisher.request(post);
+        int counter = 0;
+        for (Client publisher : publishers) {
+            publisher.connect(ip, port);
+            publisher.request(postQueue[counter++]);
+            //ensure that all posts are published in turn.
+            Thread.sleep(100);
         }
+
         reader1.connect(ip, port);
         reader2.connect(ip, port);
         reader3.connect(ip, port);
         reader1.request("GET /queue/weather");
         reader2.request("GET /queue/weather");
         reader3.request("GET /queue/weather");
+        Thread.sleep(5000);
         String result1 = reader1.readResponse();
         String result2 = reader2.readResponse();
         String result3 = reader3.readResponse();

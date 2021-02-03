@@ -61,7 +61,7 @@ public class Connection implements AutoCloseable {
     public void write(String message) {
         try {
             writer.write(message);
-            writer.newLine();
+//            writer.newLine();
             writer.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -73,7 +73,12 @@ public class Connection implements AutoCloseable {
      */
     public String readLine() {
         try {
-            return reader.readLine();
+//            while (!reader.ready()) {
+//                Thread.sleep(1);
+//            }
+            String mes = reader.readLine();
+            System.out.println(Thread.currentThread().getName() + "just read: " + mes);
+            return mes;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

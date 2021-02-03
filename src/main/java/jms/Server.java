@@ -18,6 +18,10 @@ public class Server {
             Runtime.getRuntime().availableProcessors()
     );
 
+    public Service getQueueService() {
+        return queueService;
+    }
+
     public Server(int port) {
         this.port = port;
     }

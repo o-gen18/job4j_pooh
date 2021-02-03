@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
-public class ServerImpl implements Server {
+public class ServerImpl{
     private java.util.Queue<String> topicQueue = new ConcurrentLinkedQueue<>();
     private java.util.Queue<String> queueQueue = new ConcurrentLinkedQueue<>();
 
@@ -28,7 +28,12 @@ public class ServerImpl implements Server {
                              new InputStreamReader(socket.getInputStream()))) {
                     pool.submit(() -> {
                         StringBuilder message = new StringBuilder();
-                        String str = in.readLine();
+                        String str = null;
+                        try {
+                            str = in.readLine();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         while (!str.isEmpty()) {
                             message.append(str);
                         }
